@@ -1,0 +1,64 @@
+
+Для запуска этого микросервиса используем команду:
+# docker run --env-file .env -p 8081:8081 credit-card-service
+
+Отдельно поднимается докер контейнер с PostgreSQL базой данных.
+Запускается Docker container c PostgreSQL 12 (localhost:5432)
+Создается база данных ms_credit_cards с пользователем admin (пароль: admin)
+// Postgresql в docker, run command:
+# docker run --name my-postgres  -e POSTGRES_USER=admin  -e POSTGRES_PASSWORD=admin  -e POSTGRES_DB=ms_credit_cards  -p 5432:5432  -d postgres:12
+или просто запустить созданный контейнер:
+# docker start my-postgres
+
+# docker ps               - проверить запущенные контейнеры
+# docker ps -a            - посмотреть все контейнеры (включая остановленные)
+# docker stop my-postgres - остановить контейнер
+# docker rm my-postgres   - удалить контейнер
+# docker logs my-postgres - посмотреть логи контейнера
+# docker images           - посмотреть образы
+# docker rmi <image_id>   - удалить образ по ID
+# docker exec -it my-postgres bash  - зайти в контейнер
+
+---------
+Для переноса докер контейнерана другой компьютер:
+# docker commit my-postgres my-postgres-image             - создать образ из контейнера
+# docker save -o my-postgres-image.tar my-postgres-image  - сохранить образ в файл
+
+# docker load -i my-postgres-image.tar                    - загрузить образ из файла на другом компьютере
+# docker run --name my-postgres -p 5432:5432 -d my-postgres-image  - запустить контейнер из образа
+Минус: данные, хранящиеся во внешних volume, не попадут, только данные внутри контейнера.
+Или перенести данные как бекапы баз данных.
+
+---------
+Для добавления БД в докер контейнер my-postgres:
+# docker exec -it my-postgres bash   - зайти в контейнер
+# psql -U admin -d postgres          - подключиться к psql под пользователем admin к базе postgres
+CREATE DATABASE ms_credit_cards;
+\l                   -- список баз данных
+\c ms_credit_cards;  -- подключиться к базе
+\d                   -- список таблиц
+\q                   -- выйти из psql
+
+---------
+I use next dependencies in my Spring Boot reactive microservice project:
+
+spring-boot-starter-webflux – для реактивного Web (REST API)
+spring-boot-starter-security – для Spring Security
+spring-boot-starter-data-r2dbc – для реактивного доступа к базе данных
+r2dbc-postgresql – драйвер R2DBC для PostgreSQL
+r2dbc-h2 – драйвер R2DBC для H2 (тест/разработка)
+spring-cloud-starter-netflix-eureka-client – для регистрации в Eureka (Discovery Client)
+spring-boot-starter-actuator – для мониторинга и health-check
+reactor-test – для тестирования реактивных потоков (Flux/Mono)
+spring-boot-starter-test – общий тестовый стартер Spring Boot
+spring-security-test – для тестирования Spring Security
+
+resilience4j-spring-boot3 - интеграция Resilience4j с Spring Boot 3
+resilience4j-reactor - поддержка реактивного программирования в Resilience4j
+resilience4j-ratelimiter - ограничение скорости вызовов в Resilience4j
+resilience4j-circuitbreaker - реализация шаблона Circuit Breaker в Resilience4j
+resilience4j-retry - поддержка повторных попыток в Resilience4j
+resilience4j-bulkhead - изоляция вызовов с помощью Bulkhead в Resilience4j
+resilience4j-micrometer - интеграция с Micrometer для мониторинга Resilience4j
+spring-boot-starter-aop - для аспектно-ориентированного программирования (AOP) в Spring Boot
+

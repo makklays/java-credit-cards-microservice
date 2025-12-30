@@ -1,0 +1,53 @@
+
+Да, для Eureka нужен отдельный сервис — Eureka Server. Он сам по себе является микросервисом, который управляет
+регистрацией других сервисов (Clients) и их discovery.
+
+Вот как можно поднять Eureka Server:
+
+1. Создать отдельный Spring Boot проект
+Artifact: spring-boot-starter-parent
+Dependencies:
+spring-cloud-starter-netflix-eureka-server
+spring-boot-starter-web
+
+2. Основной класс
+@SpringBootApplication
+@EnableEurekaServer
+public class EurekaServerApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(EurekaServerApplication.class, args);
+    }
+}
+
+@EnableEurekaServer превращает сервис в сервер Eureka.
+
+3. application.yml
+server:
+  port: 8761
+eureka:
+    client:
+        register-with-eureka: false
+        fetch-registry: false
+    instance:
+        hostname: localhost
+spring:
+    application:
+        name: eureka-server
+
+4. Запустить приложение. По умолчанию Eureka Server будет доступен по адресу http://localhost:8761.
+Теперь другие микросервисы могут регистрироваться в этом Eureka Server, указав его адрес в своих настройках.
+----------------------------------------
+
+Вот пример конфигурации клиента Eureka в другом микросервисе:
+eureka:
+    client:
+        service-url:
+            defaultZone: http://localhost:8761/eureka/
+    instance:
+        hostname: localhost
+spring:
+    application:
+        name: my-microservice
+Таким образом, у вас будет отдельный Eureka Server для управления регистрацией и обнаружением микросервисов.
+Если у вас есть дополнительные вопросы по настройке или использованию Eureka, не стесняйтесь спрашивать!
+
