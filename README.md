@@ -7,6 +7,7 @@
     <img src="./src/main/resources/static/images/banco4.jpg" width="170" />
     <img src="./src/main/resources/static/images/banco1.jpg" width="170" />
     <img src="./src/main/resources/static/images/banco3.jpg" width="170" />
+    <img src="./src/main/resources/static/images/cards.jpg" width="170" />
 </p>
 
 ### Overview 
