@@ -1,7 +1,7 @@
 # Java Credit Cards Microservice
 
 <p align="left">
-    <img src="./src/main/resources/static/images/schema2.png" />
+    <img src="./src/main/resources/static/images/schema-credit-cards-microservice.png" />
 </p>
 <p align="left">
     <img src="./src/main/resources/static/images/banco4.jpg" width="170" />
