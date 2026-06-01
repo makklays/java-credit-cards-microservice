@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -38,6 +39,29 @@ public class CreditCardCommandService {
         this.idempotentRepo = idempotentRepo;
         this.cqrsReadRepo = cqrsReadRepo;
         this.txOperator = txOperator;
+    }
+
+    /**
+     * Сохраняет поток кредитных карт и синхронизирует их с CQRS Read-витриной.
+     */
+    public Flux<CreditCard> saveAll(Mono<CreditCard> creditCardMono) {
+        return creditCardMono
+            .flatMap(card -> {
+                // Если у карты нет таймстампов, проставим их перед сохранением
+                if (card.getCreatedAt() == null) {
+                    card.setCreatedAt(LocalDateTime.now());
+                }
+                card.setUpdatedAt(LocalDateTime.now());
+
+                // 1. Сохраняем в основную таблицу (Write Model)
+                return creditCardRepo.save(card)
+                    // 2. Сразу же обновляем CQRS витрину (Read Model)
+                    .flatMap(savedCard -> updateCqrsReadView(savedCard)
+                        .thenReturn(savedCard)); // Возвращаем сохраненную Write-карту
+            })
+            // Превращаем в Flux, так как ваш контроллер ожидает Flux на выходе метода сервиса
+            .flux()
+            .as(txOperator::transactional); // Обертываем операцию в транзакцию
     }
 
     /**
@@ -123,9 +147,9 @@ public class CreditCardCommandService {
                 card.setBalance(card.getBalance().add(amount));
 
                 return creditCardRepo.save(card) // 2. Сохраняем Write-модель
-                        .flatMap(savedCard -> updateCqrsReadView(savedCard) // 3. Обновляем Read-витрину
-                                .then(confirmIdempotency(idempotencyKey)) // 4. Закрываем ключ идемпотентности
-                                .thenReturn(savedCard));
+                    .flatMap(savedCard -> updateCqrsReadView(savedCard) // 3. Обновляем Read-витрину
+                        .then(confirmIdempotency(idempotencyKey)) // 4. Закрываем ключ идемпотентности
+                        .thenReturn(savedCard));
             })
             .as(txOperator::transactional); // Вся цепочка атомарна
     }
@@ -150,9 +174,9 @@ public class CreditCardCommandService {
                 card.setBalance(card.getBalance().subtract(amount));
 
                 return creditCardRepo.save(card)
-                        .flatMap(savedCard -> updateCqrsReadView(savedCard)
-                                .then(confirmIdempotency(idempotencyKey))
-                                .thenReturn(savedCard));
+                    .flatMap(savedCard -> updateCqrsReadView(savedCard)
+                        .then(confirmIdempotency(idempotencyKey))
+                        .thenReturn(savedCard));
             })
             .as(txOperator::transactional);
     }
@@ -167,8 +191,8 @@ public class CreditCardCommandService {
 
         return checkAndLock(idempotencyKey)
             .then(Mono.zip(
-                    creditCardRepo.findById(fromId).switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Source card not found"))),
-                    creditCardRepo.findById(toId).switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target card not found")))
+                creditCardRepo.findById(fromId).switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Source card not found"))),
+                creditCardRepo.findById(toId).switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Target card not found")))
             ))
             .flatMap(tuple -> {
                 CreditCard from = tuple.getT1();
@@ -183,10 +207,10 @@ public class CreditCardCommandService {
 
                 // Сохраняем обе карты, обновляем обе витрины в CQRS, закрываем ключ
                 return creditCardRepo.save(from)
-                        .flatMap(this::updateCqrsReadView)
-                        .then(creditCardRepo.save(to))
-                        .flatMap(this::updateCqrsReadView)
-                        .then(confirmIdempotency(idempotencyKey));
+                    .flatMap(this::updateCqrsReadView)
+                    .then(creditCardRepo.save(to))
+                    .flatMap(this::updateCqrsReadView)
+                    .then(confirmIdempotency(idempotencyKey));
             })
             .as(txOperator::transactional)
             .then();

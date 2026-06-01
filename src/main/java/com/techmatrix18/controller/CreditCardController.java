@@ -1,7 +1,9 @@
 package com.techmatrix18.controller;
 
 import com.techmatrix18.model.CreditCard;
-import com.techmatrix18.service.CreditCardService;
+import com.techmatrix18.model.CreditCardCqrsRead;
+import com.techmatrix18.service.CreditCardCommandService;
+import com.techmatrix18.service.CreditCardQueryService;
 import com.techmatrix18.service.TelegramService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -10,23 +12,27 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 
 /**
- * REST controller for CreditCard endpoints.
+ * REST controller for CreditCard endpoints with CQRS and Idempotency.
  *
  * @author Alexander Kuziv <makklays@gmail.com>
  * @company TechMatrix18
- * @since 25-12-2025
- * @version 0.0.1
+ * @since 02.06.2026
+ * @version 0.0.2
  */
 @RestController
 @RequestMapping(path = "/api/v1/credit-cards", produces = "application/json")
 @CrossOrigin(origins = "*")
 public class CreditCardController {
 
-    private final CreditCardService creditCardService;
+    private final CreditCardCommandService creditCardCommandService;
+    private final CreditCardQueryService creditCardQueryService;
     private final TelegramService telegramService;
 
-    public CreditCardController(CreditCardService creditCardService, TelegramService telegramService) {
-        this.creditCardService = creditCardService;
+    public CreditCardController(CreditCardCommandService creditCardCommandService,
+                                CreditCardQueryService creditCardQueryService,
+                                TelegramService telegramService) {
+        this.creditCardCommandService = creditCardCommandService;
+        this.creditCardQueryService = creditCardQueryService;
         this.telegramService = telegramService;
     }
 
@@ -38,24 +44,31 @@ public class CreditCardController {
         return Mono.just("Hello, reactive world!");
     }
 
+    // =========================================================================
+    //   CQRS: ВЕТКА ЧТЕНИЯ (QUERIES) -> Возвращают CreditCardCqrsRead
+    // =========================================================================
     @GetMapping(params = "recent")
-    public Flux<CreditCard> recentCreditCard() {
-        return creditCardService.findAll().take(12);
+    public Flux<CreditCardCqrsRead> recentCreditCard() {
+        return creditCardQueryService.findAll().take(12);
     }
 
     /**
-     * Get credit card by ID
+     * Get credit card by ID (Using CQRS read-optimized table)
      *
      * @param id
      * @return
      */
     @GetMapping("/{id}")
-    public Mono<CreditCard> creaditCardById(@PathVariable("id") Long id) {
-        return creditCardService.findById(id);
+    public Mono<CreditCardCqrsRead> creaditCardById(@PathVariable("id") Long id) {
+        return creditCardQueryService.findById(id);
     }
 
+    // =========================================================================
+    //   CQRS + ИДЕМПОТЕНТНОСТЬ: ВЕТКА ЗАПИСИ (COMMANDS) -> Меняют состояние
+    // =========================================================================
     /**
      * Create a new credit card
+     * Note: For creation, you could also add an idempotency key if needed.
      *
      * @param creditCardMono
      * @return
@@ -63,52 +76,65 @@ public class CreditCardController {
     @PostMapping(consumes = "application/json")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<CreditCard> postCreditCard(@RequestBody Mono<CreditCard> creditCardMono) {
-        return creditCardService.saveAll(creditCardMono).next();
+        // Метод saveAll() остался в репозитории записи, используем commandService
+        return creditCardCommandService.saveAll(creditCardMono).next();
     }
 
     /**
-     * Operation to add money to credit card
+     * Operation to add money to credit card (Idempotent)
      *
+     * @param idempotencyKey Secure token from client
      * @param creditCardId
      * @param amount
      * @return
      */
     @PostMapping("/deposit-money")
-    @ResponseStatus(HttpStatus.CREATED)
-    public Mono<CreditCard> postAddMoney(@RequestParam("credit-card") Long creditCardId, @RequestParam("amount") BigDecimal amount) {
-        if (amount.signum() <= 0) {
+    @ResponseStatus(HttpStatus.OK) // Для успешной обработки существующей операции OK подходит лучше всего
+    public Mono<CreditCard> postAddMoney(
+            @RequestHeader("X-Idempotency-Key") String idempotencyKey,
+            @RequestParam("credit-card") Long creditCardId,
+            @RequestParam("amount") BigDecimal amount) {
+
+        if (amount == null || amount.signum() <= 0) {
             return Mono.error(new IllegalArgumentException("Amount must be positive"));
         }
-        return creditCardService.addMoney(creditCardId, amount);
+        return creditCardCommandService.addMoney(idempotencyKey, creditCardId, amount);
     }
 
     /**
-     * Operation to charge money to credit card
+     * Operation to charge money to credit card (Idempotent)
      *
+     * @param idempotencyKey Secure token from client
      * @param creditCardId
      * @param amount
      * @return
      */
     @PostMapping("/withdrawal-money")
-    @ResponseStatus(HttpStatus.CREATED)
-    public Mono<CreditCard> postChargeMoney(@RequestParam("credit-card") Long creditCardId, @RequestParam("amount") BigDecimal amount) {
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<CreditCard> postChargeMoney(
+            @RequestHeader("X-Idempotency-Key") String idempotencyKey,
+            @RequestParam("credit-card") Long creditCardId,
+            @RequestParam("amount") BigDecimal amount) {
+
         if (amount == null || amount.signum() <= 0) {
             return Mono.error(new IllegalArgumentException("Amount must be positive"));
         }
-        return creditCardService.chargeMoney(creditCardId, amount);
+        return creditCardCommandService.chargeMoney(idempotencyKey, creditCardId, amount);
     }
 
     /**
-     * Operation to transfer money between credit cards
+     * Operation to transfer money between credit cards (Idempotent)
      *
+     * @param idempotencyKey Secure token from client
      * @param fromCreditCardId
      * @param toCreditCardId
      * @param amount
      * @return
      */
     @PostMapping("/transfer-money")
-    @ResponseStatus(HttpStatus.CREATED)
-    public Mono<CreditCard> postTransferMoney(
+    @ResponseStatus(HttpStatus.NO_CONTENT) // Изменено на 244 No Content, так как команда ничего не возвращает
+    public Mono<Void> postTransferMoney(
+            @RequestHeader("X-Idempotency-Key") String idempotencyKey,
             @RequestParam("from-credit-card") Long fromCreditCardId,
             @RequestParam("to-credit-card") Long toCreditCardId,
             @RequestParam("amount") BigDecimal amount
@@ -116,7 +142,7 @@ public class CreditCardController {
         if (amount == null || amount.signum() <= 0) {
             return Mono.error(new IllegalArgumentException("Amount must be positive"));
         }
-        return creditCardService.transferMoney(fromCreditCardId, toCreditCardId, amount);
+        return creditCardCommandService.transferMoney(idempotencyKey, fromCreditCardId, toCreditCardId, amount);
     }
 }
 
