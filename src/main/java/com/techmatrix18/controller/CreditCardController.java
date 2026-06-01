@@ -66,18 +66,10 @@ public class CreditCardController {
     // =========================================================================
     //   CQRS + ИДЕМПОТЕНТНОСТЬ: ВЕТКА ЗАПИСИ (COMMANDS) -> Меняют состояние
     // =========================================================================
-    /**
-     * Create a new credit card
-     * Note: For creation, you could also add an idempotency key if needed.
-     *
-     * @param creditCardMono
-     * @return
-     */
     @PostMapping(consumes = "application/json")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<CreditCard> postCreditCard(@RequestBody Mono<CreditCard> creditCardMono) {
-        // Метод saveAll() остался в репозитории записи, используем commandService
-        return creditCardCommandService.saveAll(creditCardMono).next();
+    public Mono<CreditCard> postCreditCard(@RequestBody CreditCard creditCard) {
+        return creditCardCommandService.createCard(creditCard);
     }
 
     /**

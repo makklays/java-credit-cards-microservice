@@ -65,6 +65,26 @@ public class CreditCardCommandService {
     }
 
     /**
+     * Вспомогательный метод для обновления CQRS Read-витрины после изменения Write-модели.
+     */
+    public Mono<CreditCard> createCard(CreditCard card) {
+        card.setCreatedAt(LocalDateTime.now());
+        card.setUpdatedAt(LocalDateTime.now());
+
+        // По умолчанию выставляем значения, если они не пришли в запросе
+        if (card.getStatus() == null) {
+            card.setStatus(com.techmatrix18.enums.CreditCardStatus.EXPIRED);
+        }
+        if (card.getType() == null) {
+            card.setType(com.techmatrix18.enums.CreditCardType.VISA);
+        }
+
+        return creditCardRepo.save(card)
+            .flatMap(savedCard -> updateCqrsReadView(savedCard).thenReturn(savedCard))
+            .as(txOperator::transactional);
+    }
+
+    /**
      * Вспомогательный метод для проверки и сохранения ключа идемпотентности.
      */
     private Mono<Boolean> checkAndLock(String idempotencyKey) {
