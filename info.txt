@@ -6,9 +6,12 @@
 Запускается Docker container c PostgreSQL 12 (localhost:5432)
 Создается база данных ms_credit_cards с пользователем admin (пароль: admin)
 // Postgresql в docker, run command:
-# docker run --name my-postgres  -e POSTGRES_USER=admin  -e POSTGRES_PASSWORD=admin  -e POSTGRES_DB=ms_credit_cards  -p 5432:5432  -d postgres:12
+# docker run -d --name my-postgres  -e POSTGRES_USER=admin  -e POSTGRES_PASSWORD=admin  -e POSTGRES_DB=ms_credit_cards  -p 5432:5432  -v postgres12_data:/var/lib/postgresql/data postgres:12
 или просто запустить созданный контейнер:
 # docker start my-postgres
+
+Запуск PostgreSQL 12 вручную с автоперезапуском (запускется при включении ноутбука автоматически):
+# docker run -d --name my-postgres --restart unless-stopped -e POSTGRES_DB=ms_credit_cards -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=admin -p 5432:5432 -v postgres12_data:/var/lib/postgresql/data postgres:12
 
 # docker ps               - проверить запущенные контейнеры
 # docker ps -a            - посмотреть все контейнеры (включая остановленные)

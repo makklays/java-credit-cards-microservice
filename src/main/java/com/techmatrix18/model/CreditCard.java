@@ -7,7 +7,7 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -35,7 +35,7 @@ public class CreditCard {
     private String cardholderName;
 
     @Column("expiration_date")
-    private LocalDateTime expirationDate;
+    private LocalDate expirationDate;
 
     @Column("cvv")
     private String cvv;
@@ -61,10 +61,10 @@ public class CreditCard {
     private String bankName;
 
     @Column("issue_date")
-    private Instant issueDate;
+    private LocalDate issueDate;
 
     @Column("reward_points")
-    private Integer rewardPoints;
+    private Long rewardPoints;
 
     @Column("interest_rate")
     private BigDecimal interestRate;
@@ -103,10 +103,10 @@ public class CreditCard {
         this.cardholderName = cardholderName;
     }
 
-    public LocalDateTime getExpirationDate() {
+    public LocalDate getExpirationDate() {
         return expirationDate;
     }
-    public void setExpirationDate(LocalDateTime expirationDate) {
+    public void setExpirationDate(LocalDate expirationDate) {
         this.expirationDate = expirationDate;
     }
 
@@ -166,17 +166,17 @@ public class CreditCard {
         this.type = type;
     }
 
-    public Instant getIssueDate() {
+    public LocalDate getIssueDate() {
         return issueDate;
     }
-    public void setIssueDate(Instant issueDate) {
+    public void setIssueDate(LocalDate issueDate) {
         this.issueDate = issueDate;
     }
 
-    public Integer getRewardPoints() {
+    public Long getRewardPoints() {
         return rewardPoints;
     }
-    public void setRewardPoints(Integer rewardPoints) {
+    public void setRewardPoints(Long rewardPoints) {
         this.rewardPoints = rewardPoints;
     }
 
@@ -216,14 +216,14 @@ public class CreditCard {
         if (this == o) return true;
         if (!(o instanceof CreditCard that)) return false;
         return getId().equals(that.getId()) && getUserId().equals(that.getUserId()) &&
-                getCardNumber().equals(that.getCardNumber()) && getCardholderName().equals(that.getCardholderName()) &&
-                getExpirationDate().equals(that.getExpirationDate()) && getCvv().equals(that.getCvv()) &&
-                getPin().equals(that.getPin()) && getBalance().equals(that.getBalance()) &&
-                getCreditLimit().equals(that.getCreditLimit()) && getCurrencyCode().equals(that.getCurrencyCode()) &&
-                getStatus() == that.getStatus() && getBankName().equals(that.getBankName()) &&
-                getType() == that.getType() && getIssueDate().equals(that.getIssueDate()) &&
-                getRewardPoints().equals(that.getRewardPoints()) && getInterestRate().equals(that.getInterestRate()) &&
-                getIsBlocked().equals(that.getIsBlocked()) && getContactless().equals(that.getContactless());
+            getCardNumber().equals(that.getCardNumber()) && getCardholderName().equals(that.getCardholderName()) &&
+            getExpirationDate().equals(that.getExpirationDate()) && getCvv().equals(that.getCvv()) &&
+            getPin().equals(that.getPin()) && getBalance().equals(that.getBalance()) &&
+            getCreditLimit().equals(that.getCreditLimit()) && getCurrencyCode().equals(that.getCurrencyCode()) &&
+            getStatus() == that.getStatus() && getBankName().equals(that.getBankName()) &&
+            getType() == that.getType() && getIssueDate().equals(that.getIssueDate()) &&
+            getRewardPoints().equals(that.getRewardPoints()) && getInterestRate().equals(that.getInterestRate()) &&
+            getIsBlocked().equals(that.getIsBlocked()) && getContactless().equals(that.getContactless());
     }
 
     @Override
