@@ -59,7 +59,7 @@ public class CreditCardController {
      * @return
      */
     @GetMapping("/{id}")
-    public Mono<CreditCardCqrsRead> creaditCardById(@PathVariable("id") Long id) {
+    public Mono<CreditCardCqrsRead> creditCardById(@PathVariable("id") Long id) {
         return creditCardQueryService.findById(id);
     }
 
