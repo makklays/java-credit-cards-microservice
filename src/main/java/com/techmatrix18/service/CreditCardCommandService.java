@@ -2,9 +2,9 @@ package com.techmatrix18.service;
 
 import com.techmatrix18.model.CreditCard;
 import com.techmatrix18.model.CreditCardCqrsRead;
-import com.techmatrix18.model.CreditCardIdempotent;
+import com.techmatrix18.model.CreditCardIdempotency;
 import com.techmatrix18.repository.CreditCardCqrsReadRepository;
-import com.techmatrix18.repository.CreditCardIdempotentRepository;
+import com.techmatrix18.repository.CreditCardIdempotencyRepository;
 import com.techmatrix18.repository.CreditCardRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -27,16 +27,16 @@ import java.time.LocalDateTime;
 public class CreditCardCommandService {
 
     private final CreditCardRepository creditCardRepo;
-    private final CreditCardIdempotentRepository idempotentRepo;
+    private final CreditCardIdempotencyRepository idempotencyRepo;
     private final CreditCardCqrsReadRepository cqrsReadRepo;
     private final TransactionalOperator txOperator;
 
     public CreditCardCommandService(CreditCardRepository creditCardRepo,
-                                    CreditCardIdempotentRepository idempotentRepo,
+                                    CreditCardIdempotencyRepository idempotencyRepo,
                                     CreditCardCqrsReadRepository cqrsReadRepo,
                                     TransactionalOperator txOperator) {
         this.creditCardRepo = creditCardRepo;
-        this.idempotentRepo = idempotentRepo;
+        this.idempotencyRepo = idempotencyRepo;
         this.cqrsReadRepo = cqrsReadRepo;
         this.txOperator = txOperator;
     }
@@ -91,19 +91,19 @@ public class CreditCardCommandService {
         if (idempotencyKey == null || idempotencyKey.isBlank()) {
             return Mono.just(true); // Если ключ не передан, пропускаем (не рекомендуется для финансов)
         }
-        return idempotentRepo.existsById(idempotencyKey)
+        return idempotencyRepo.existsById(idempotencyKey)
             .flatMap(exists -> {
                 if (exists) {
                     // Ключ уже обрабатывался — выкидываем ошибку (Conflict)
                     return Mono.error(new ResponseStatusException(HttpStatus.CONFLICT, "Duplicate request detected"));
                 }
                 // Ключа нет — создаем запись со статусом PROCESSING
-                CreditCardIdempotent record = new CreditCardIdempotent();
+                CreditCardIdempotency record = new CreditCardIdempotency();
                 record.setIdempotencyKey(idempotencyKey);
                 record.setStatus("PROCESSING");
                 record.setCreatedAt(LocalDateTime.now());
                 record.setNew(true); // Указываем R2DBC делать строго INSERT
-                return idempotentRepo.save(record).thenReturn(true);
+                return idempotencyRepo.save(record).thenReturn(true);
             });
     }
 
@@ -112,11 +112,11 @@ public class CreditCardCommandService {
      */
     private Mono<Void> confirmIdempotency(String idempotencyKey) {
         if (idempotencyKey == null || idempotencyKey.isBlank()) return Mono.empty();
-        return idempotentRepo.findById(idempotencyKey)
+        return idempotencyRepo.findById(idempotencyKey)
             .flatMap(record -> {
                 record.setStatus("COMPLETED");
                 record.setNew(false); // Делаем UPDATE существующего ключа
-                return idempotentRepo.save(record);
+                return idempotencyRepo.save(record);
             }).then();
     }
 

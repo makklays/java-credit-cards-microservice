@@ -9,15 +9,15 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * Model class representing a Credit Card Idempotent entity.
+ * Model class representing a Credit Card Idempotency entity.
  *
  * @author Alexander Kuziv <makklays@gmail.com>
  * @company TechMatrix18
  * @version 0.0.1
  * @since 01.06.2026
  */
-@Table("credit_cards_idempotent")
-public class CreditCardIdempotent implements Persistable<String> {
+@Table("credit_cards_idempotency")
+public class CreditCardIdempotency implements Persistable<String> {
 
     @Id
     @Column("idempotency_key")
@@ -61,7 +61,7 @@ public class CreditCardIdempotent implements Persistable<String> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof CreditCardIdempotent that)) return false;
+        if (!(o instanceof CreditCardIdempotency that)) return false;
         return Objects.equals(getIdempotencyKey(), that.getIdempotencyKey()) &&
             Objects.equals(getResponseBody(), that.getResponseBody()) &&
             Objects.equals(getStatus(), that.getStatus());
@@ -79,7 +79,7 @@ public class CreditCardIdempotent implements Persistable<String> {
 
     @Override
     public String toString() {
-        return "CreditCardIdempotent {" +
+        return "CreditCardIdempotency {" +
             "idempotencyKey='" + idempotencyKey + '\'' +
             ", responseBody='" + responseBody + '\'' +
             ", status='" + status + '\'' +

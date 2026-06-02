@@ -1,6 +1,6 @@
 package com.techmatrix18.repository;
 
-import com.techmatrix18.model.CreditCardIdempotent;
+import com.techmatrix18.model.CreditCardIdempotency;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
  * @since 02.06.2026
  */
 @Repository
-public interface CreditCardIdempotentRepository extends ReactiveCrudRepository<CreditCardIdempotent, String> {
+public interface CreditCardIdempotencyRepository extends ReactiveCrudRepository<CreditCardIdempotency, String> {
     // Базовых методов save() и existsById() из ReactiveCrudRepository нам будет полностью достаточно
 }
 
