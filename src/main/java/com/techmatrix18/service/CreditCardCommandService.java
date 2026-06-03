@@ -23,8 +23,8 @@ import java.util.UUID;
  *
  * @author Alexander Kuziv <makklays@gmail.com>
  * @company TechMatrix18
- * @version 0.0.2
- * @since 02.06.2026
+ * @version 0.0.1
+ * @since 03.06.2026
  */
 @Service
 public class CreditCardCommandService {
@@ -80,7 +80,7 @@ public class CreditCardCommandService {
                 card.setUpdatedAt(LocalDateTime.now());
 
                 return creditCardRepo.save(card)
-                        .flatMap(savedCard -> saveOutboxEvent("CardCreated", savedCard));
+                    .flatMap(savedCard -> saveOutboxEvent("CardCreated", savedCard));
             })
             .flux()
             .as(txOperator::transactional);
@@ -192,6 +192,63 @@ public class CreditCardCommandService {
                 record.setNew(false);
                 return idempotencyRepo.save(record);
             }).then();
+    }
+
+    /**
+     * Перевод денег между двумя кредитными картами (С Idempotency и Outbox)
+     *
+     * @param idempotencyKey Уникальный UUID токен запроса от клиента
+     * @param fromCardId     ID карты, с которой списываем деньги
+     * @param toCardId       ID карты, на которую зачисляем деньги
+     * @param amount         Сумма перевода
+     */
+    public Mono<Void> transferMoney(String idempotencyKey, Long fromCardId, Long toCardId, BigDecimal amount) {
+        // Базовые валидации аргументов
+        if (fromCardId.equals(toCardId)) {
+            return Mono.error(new IllegalArgumentException("Cannot transfer money to the same card"));
+        }
+        if (amount.signum() <= 0) {
+            return Mono.error(new IllegalArgumentException("Amount must be positive"));
+        }
+
+        // 1. Проверяем и блокируем ключ идемпотентности на входе
+        return checkAndLock(idempotencyKey)
+            // 2. Ищем карту списания (Source Card)
+            .then(creditCardRepo.findById(fromCardId))
+            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Source card not found")))
+            .flatMap(fromCard -> {
+                // Проверяем, хватает ли денег с учетом кредитного лимита
+                BigDecimal availableFunds = fromCard.getBalance().add(fromCard.getCreditLimit());
+                if (availableFunds.compareTo(amount) < 0) {
+                    return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Credit limit exceeded on source card"));
+                }
+
+                // 3. Ищем карту зачисления (Destination Card)
+                return creditCardRepo.findById(toCardId)
+                    .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Destination card not found")))
+                    .flatMap(toCard -> {
+                        // Изменяем балансы и таймстампы для обеих карт в памяти
+                        fromCard.setBalance(fromCard.getBalance().subtract(amount));
+                        fromCard.setUpdatedAt(LocalDateTime.now());
+
+                        toCard.setBalance(toCard.getBalance().add(amount));
+                        toCard.setUpdatedAt(LocalDateTime.now());
+
+                        // 4. Сохраняем всё в БД в рамках ОДНОЙ неделимой транзакции:
+                        // Сначала обновляем первую карту -> пишем её событие в Outbox
+                        return creditCardRepo.save(fromCard)
+                            .flatMap(savedFrom -> saveOutboxEvent("MoneyCharged", savedFrom))
+                            // Затем обновляем вторую карту -> пишем её событие в Outbox
+                            .then(creditCardRepo.save(toCard))
+                            .flatMap(savedTo -> saveOutboxEvent("BalanceUpdated", savedTo))
+                            // Закрываем ключ идемпотентности (меняем статус на COMPLETED)
+                            .then(confirmIdempotency(idempotencyKey));
+                    });
+            })
+            // txOperator гарантирует: если упадет хоть один save или упадет сеть,
+            // вся цепочка откатится, и балансы карт не рассинхронизируются.
+            .as(txOperator::transactional)
+            .then(); // Возвращаем Mono<Void> в знак успешного окончания
     }
 }
 
