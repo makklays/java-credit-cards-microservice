@@ -16,8 +16,8 @@ import java.math.BigDecimal;
  *
  * @author Alexander Kuziv <makklays@gmail.com>
  * @company TechMatrix18
- * @since 02.06.2026
- * @version 0.0.2
+ * @since 03.06.2026
+ * @version 0.0.1
  */
 @RestController
 @RequestMapping(path = "/api/v1/credit-cards", produces = "application/json")
@@ -66,10 +66,17 @@ public class CreditCardController {
     // =========================================================================
     //   CQRS + ИДЕМПОТЕНТНОСТЬ: ВЕТКА ЗАПИСИ (COMMANDS) -> Меняют состояние
     // =========================================================================
+    /**
+     * Operation to create a new credit card (Now protected by Idempotency)
+     */
     @PostMapping(consumes = "application/json")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<CreditCard> postCreditCard(@RequestBody CreditCard creditCard) {
-        return creditCardCommandService.createCard(creditCard);
+    public Mono<CreditCard> postCreditCard(
+            @RequestHeader("X-Idempotency-Key") String idempotencyKey,
+            @RequestBody CreditCard creditCard) {
+
+        // Передаем ключ идемпотентности, чтобы защитить систему от создания дубликатов карт
+        return creditCardCommandService.createCard(idempotencyKey, creditCard);
     }
 
     /**

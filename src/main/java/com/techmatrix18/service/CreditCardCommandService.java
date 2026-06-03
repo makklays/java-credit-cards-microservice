@@ -49,22 +49,30 @@ public class CreditCardCommandService {
     }
 
     /**
-     * Создание новой карты с логикой Outbox
+     * Создание новой карты с логикой Идемпотентности и Outbox
      */
-    public Mono<CreditCard> createCard(CreditCard card) {
-        card.setCreatedAt(LocalDateTime.now());
-        card.setUpdatedAt(LocalDateTime.now());
+    public Mono<CreditCard> createCard(String idempotencyKey, CreditCard card) {
+        // 1. Проверяем и блокируем ключ идемпотентности на входе
+        return checkAndLock(idempotencyKey)
+            .then(Mono.defer(() -> {
+                card.setCreatedAt(LocalDateTime.now());
+                card.setUpdatedAt(LocalDateTime.now());
 
-        if (card.getStatus() == null) {
-            card.setStatus(com.techmatrix18.enums.CreditCardStatus.EXPIRED);
-        }
-        if (card.getType() == null) {
-            card.setType(com.techmatrix18.enums.CreditCardType.VISA);
-        }
+                if (card.getStatus() == null) {
+                    card.setStatus(com.techmatrix18.enums.CreditCardStatus.EXPIRED);
+                }
+                if (card.getType() == null) {
+                    card.setType(com.techmatrix18.enums.CreditCardType.VISA);
+                }
 
-        // 1. Сохраняем Write-модель карты в БД
-        return creditCardRepo.save(card)
-            .flatMap(savedCard -> saveOutboxEvent("CardCreated", savedCard))
+                // 2. Сохраняем карту в основную таблицу
+                return creditCardRepo.save(card)
+                    // 3. Пишем событие в Outbox
+                    .flatMap(savedCard -> saveOutboxEvent("CardCreated", savedCard)
+                        // 4. Закрываем ключ идемпотентности как COMPLETED
+                        .then(confirmIdempotency(idempotencyKey))
+                        .thenReturn(savedCard));
+            }))
             .as(txOperator::transactional); // Вся операция строго атомарна
     }
 
