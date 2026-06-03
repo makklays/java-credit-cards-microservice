@@ -73,6 +73,8 @@ public class CreditCardCommandService {
                         .then(confirmIdempotency(idempotencyKey))
                         .thenReturn(savedCard));
             }))
+            // Гарантируем, что INSERT карты, INSERT события в Outbox и UPDATE статуса идемпотентности
+            // выполнятся строго в одной транзакции БД. Всё или ничего.
             .as(txOperator::transactional); // Вся операция строго атомарна
     }
 
