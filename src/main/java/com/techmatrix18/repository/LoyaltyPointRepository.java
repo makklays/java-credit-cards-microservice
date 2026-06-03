@@ -27,11 +27,11 @@ import java.util.Set;
  *
  * @author Alexander Kuziv <makklays@gmail.com>
  * @company TechMatrix18
- * @version 0.0.1
  * @since 25.12.2025
+ * @version 0.0.1
  */
 @Repository
-public interface LoyaltyRepository extends ReactiveCrudRepository<LoyaltyPoint, Long> {
+public interface LoyaltyPointRepository extends ReactiveCrudRepository<LoyaltyPoint, Long> {
 
     Mono<LoyaltyPoint> findByCreditCardId(Long creditCardId);
 
