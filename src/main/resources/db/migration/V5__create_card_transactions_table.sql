@@ -12,8 +12,7 @@ CREATE TABLE IF NOT EXISTS card_transactions (
     amount          NUMERIC(15,2) NOT NULL,
     fee_amount      NUMERIC(15,2),
     loyalty_points  INTEGER DEFAULT 0,
-    currency_id     BIGINT,
-    currency_code   VARCHAR(3) DEFAULT 'USD',
+    currency_code   VARCHAR(50) DEFAULT 'USD',     -- USDT, DOGCOIN, etc.
     status          VARCHAR(20) DEFAULT 'PENDING', -- PENDING, COMPLETED, FAILED
     created_at      TIMESTAMP(6) DEFAULT NOW(),
     updated_at      TIMESTAMP(6) DEFAULT NOW()

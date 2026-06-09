@@ -23,7 +23,7 @@ import java.util.Objects;
 public class CreditCardCqrsRead implements Persistable<Long> {
 
     @Id
-    @Column("card_id")
+    @Column("credit_card_id")
     private Long cardId;
 
     @Column("user_id")

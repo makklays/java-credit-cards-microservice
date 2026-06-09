@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS credit_cards_cqrs_read
     masked_card_number  VARCHAR(19) NOT NULL,           -- Masked number (e.g., **** 1234)
     balance             DECIMAL(15,2) NOT NULL,
     credit_limit        DECIMAL(15,2) NOT NULL,
-    currency_code       VARCHAR(3),                     -- for example, USD, EUR
+    currency_code       VARCHAR(50),                    -- for example, USD, EUR, DOGCOIN, etc.
 
     status              VARCHAR(10) NOT NULL DEFAULT 'EXPIRED',
     type                VARCHAR(20) NOT NULL DEFAULT 'VISA',

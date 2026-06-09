@@ -20,9 +20,9 @@ import java.time.LocalDateTime;
  */
 @Table(name = "currencies")
 public class Currency {
-    @Id
-    @Column("id")
-    private Long id; // Primary key, auto-generated
+
+    @Column("cc")
+    private String cc;
 
     @Column("r030")
     private Integer r030;
@@ -33,9 +33,6 @@ public class Currency {
     @Column("rate")
     private Float rate;
 
-    @Column("cc")
-    private String cc;
-
     @Column("exchangedate")
     private String exchangedate;
 
@@ -44,11 +41,11 @@ public class Currency {
 
     // --- Getters and Setters ---
 
-    public Long getId() {
-        return id;
+    public String getCc() {
+        return cc;
     }
-    public void setId(Long id) {
-        this.id = id;
+    public void setCc(String cc) {
+        this.cc = cc;
     }
 
     public Integer getR030() {
@@ -72,13 +69,6 @@ public class Currency {
         this.rate = rate;
     }
 
-    public String getCc() {
-        return cc;
-    }
-    public void setCc(String cc) {
-        this.cc = cc;
-    }
-
     public String getExchangedate() {
         return exchangedate;
     }
@@ -97,20 +87,18 @@ public class Currency {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Currency currency)) return false;
-        return getId().equals(currency.getId()) && getR030().equals(currency.getR030()) &&
+        return getCc().equals(currency.getCc()) && getR030().equals(currency.getR030()) &&
                 getTitle().equals(currency.getTitle()) && getRate().equals(currency.getRate()) &&
-                getCc().equals(currency.getCc()) && getExchangedate().equals(currency.getExchangedate()) &&
-                getCreatedAt().equals(currency.getCreatedAt());
+                getExchangedate().equals(currency.getExchangedate()) && getCreatedAt().equals(currency.getCreatedAt());
     }
 
     @Override
     public int hashCode() {
         int result = 17;
-        result = 31 * result + (id != null ? id.hashCode() : 0);
+        result = 31 * result + (cc != null ? cc.hashCode() : 0);
         result = 31 * result + (r030 != null ? r030.hashCode() : 0);
         result = 31 * result + (title != null ? title.hashCode() : 0);
         result = 31 * result + (rate != null ? rate.hashCode() : 0);
-        result = 31 * result + (cc != null ? cc.hashCode() : 0);
         result = 31 * result + (exchangedate != null ? exchangedate.hashCode() : 0);
 
         return result;
@@ -119,11 +107,10 @@ public class Currency {
     @Override
     public String toString() {
         return "Currency {" +
-            "id=" + id +
+            "cc='" + cc + '\'' +
             ", r030=" + r030 +
             ", title=" + title +
             ", rate=" + rate +
-            ", cc='" + cc + '\'' +
             ", exchangedate='" + exchangedate + '\'' +
             ", createdAt=" + createdAt +
             '}';

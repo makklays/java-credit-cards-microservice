@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 public class CardTransactionCqrsRead {
 
     @Id
-    @Column("transaction_id")
+    @Column("card_transaction_id")
     private Long transactionId;
 
     @Column("credit_card_id")

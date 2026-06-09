@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS operation_fees (
     description         TEXT,  -- текстовое описание, комментарии к комиссии
     fee_percentage      NUMERIC(10,4),
     fee_fixed           NUMERIC(15,2),
-    currency_code       VARCHAR(3) DEFAULT 'USD',  -- для разных валют разные комиссии
+    currency_code       VARCHAR(50) DEFAULT 'USD',  -- для разных валют разные комиссии
     min_fee             NUMERIC(15,2),  -- минимальная и максимальная комиссия, чтобы ограничивать процент
     max_fee             NUMERIC(15,2),
     active              BOOLEAN DEFAULT true,  -- флаг активности комиссии, чтобы можно было отключить

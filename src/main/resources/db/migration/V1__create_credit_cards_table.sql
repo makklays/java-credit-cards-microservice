@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS credit_cards
     pin                 VARCHAR(6),
     balance             DECIMAL(15,2) NOT NULL,
     credit_limit        DECIMAL(15,2) NOT NULL,
-    currency_code       VARCHAR(3), -- например, USD, EUR
+    currency_code       VARCHAR(50), -- for example: USD, EUR, DOGCOIN, BTC, etc.
 
     status              VARCHAR(10) NOT NULL DEFAULT 'EXPIRED',
     type                VARCHAR(20) NOT NULL DEFAULT 'VISA',
