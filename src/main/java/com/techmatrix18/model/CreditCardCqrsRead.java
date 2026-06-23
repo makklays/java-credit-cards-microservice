@@ -58,6 +58,108 @@ public class CreditCardCqrsRead implements Persistable<Long> {
     @Transient
     private boolean isNew = true; // Управляет логикой сохранения записи
 
+    // --- Constructors (Builder) ---
+
+    public CreditCardCqrsRead() {}
+
+    private CreditCardCqrsRead(Builder builder) {
+        this.cardId = builder.cardId;
+        this.userId = builder.userId;
+        this.maskedCardNumber = builder.maskedCardNumber;
+        this.balance = builder.balance;
+        this.creditLimit = builder.creditLimit;
+        this.currencyCode = builder.currencyCode;
+        this.status = builder.status;
+        this.type = builder.type;
+        this.bankName = builder.bankName;
+        this.isBlocked = builder.isBlocked;
+        this.updatedAt = builder.updatedAt;
+        this.isNew = builder.isNew;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private Long cardId;
+        private Long userId;
+        private String maskedCardNumber;
+        private BigDecimal balance;
+        private BigDecimal creditLimit;
+        private String currencyCode;
+        private CreditCardStatus status = CreditCardStatus.EXPIRED; // Дефолтное значение из вашей модели
+        private CreditCardType type = CreditCardType.VISA;          // Дефолтное значение из вашей модели
+        private String bankName;
+        private Boolean isBlocked;
+        private LocalDateTime updatedAt;
+        private boolean isNew = true;                               // Дефолтное значение из вашей модели
+
+        public Builder cardId(Long cardId) {
+            this.cardId = cardId;
+            return this;
+        }
+
+        public Builder userId(Long userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        public Builder maskedCardNumber(String maskedCardNumber) {
+            this.maskedCardNumber = maskedCardNumber;
+            return this;
+        }
+
+        public Builder balance(BigDecimal balance) {
+            this.balance = balance;
+            return this;
+        }
+
+        public Builder creditLimit(BigDecimal creditLimit) {
+            this.creditLimit = creditLimit;
+            return this;
+        }
+
+        public Builder currencyCode(String currencyCode) {
+            this.currencyCode = currencyCode;
+            return this;
+        }
+
+        public Builder status(CreditCardStatus status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder type(CreditCardType type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder bankName(String bankName) {
+            this.bankName = bankName;
+            return this;
+        }
+
+        public Builder isBlocked(Boolean isBlocked) {
+            this.isBlocked = isBlocked;
+            return this;
+        }
+
+        public Builder updatedAt(LocalDateTime updatedAt) {
+            this.updatedAt = updatedAt;
+            return this;
+        }
+
+        public Builder isNew(boolean isNew) {
+            this.isNew = isNew;
+            return this;
+        }
+
+        public CreditCardCqrsRead build() {
+            return new CreditCardCqrsRead(this);
+        }
+    }
+
     // --- Getters and Setters ---
 
     public Long getCardId() { return cardId; }

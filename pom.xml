@@ -136,6 +136,20 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Основной модуль Testcontainers для интеграции с JUnit 5 -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Модуль конкретно для вашей БД (замените postgresql на mysql/mariadb/mongodb при необходимости) -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Resilience4j -->
         <dependency>
             <groupId>io.github.resilience4j</groupId>

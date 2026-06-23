@@ -81,6 +81,164 @@ public class CreditCard {
     @Column("updated_at")
     private LocalDateTime updatedAt;
 
+    // --- Constructors (Builder) ---
+
+    public CreditCard() {}
+
+    private CreditCard(Builder builder) {
+        this.id = builder.id;
+        this.userId = builder.userId;
+        this.cardNumber = builder.cardNumber;
+        this.cardholderName = builder.cardholderName;
+        this.expirationDate = builder.expirationDate;
+        this.cvv = builder.cvv;
+        this.pin = builder.pin;
+        this.balance = builder.balance;
+        this.creditLimit = builder.creditLimit;
+        this.currencyCode = builder.currencyCode;
+        this.status = builder.status;
+        this.type = builder.type;
+        this.bankName = builder.bankName;
+        this.issueDate = builder.issueDate;
+        this.rewardPoints = builder.rewardPoints;
+        this.interestRate = builder.interestRate;
+        this.contactless = builder.contactless;
+        this.isBlocked = builder.isBlocked;
+        this.createdAt = builder.createdAt;
+        this.updatedAt = builder.updatedAt;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private Long id;
+        private Long userId;
+        private String cardNumber;
+        private String cardholderName;
+        private LocalDate expirationDate;
+        private String cvv;
+        private String pin;
+        private BigDecimal balance;
+        private BigDecimal creditLimit;
+        private String currencyCode;
+        private CreditCardStatus status = CreditCardStatus.EXPIRED; // Дефолтное значение из вашей модели
+        private CreditCardType type = CreditCardType.VISA;          // Дефолтное значение из вашей модели
+        private String bankName;
+        private LocalDate issueDate;
+        private Long rewardPoints;
+        private BigDecimal interestRate;
+        private Boolean contactless;
+        private Boolean isBlocked;
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
+
+        public Builder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder userId(Long userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        public Builder cardNumber(String cardNumber) {
+            this.cardNumber = cardNumber;
+            return this;
+        }
+
+        public Builder cardholderName(String cardholderName) {
+            this.cardholderName = cardholderName;
+            return this;
+        }
+
+        public Builder expirationDate(LocalDate expirationDate) {
+            this.expirationDate = expirationDate;
+            return this;
+        }
+
+        public Builder cvv(String cvv) {
+            this.cvv = cvv;
+            return this;
+        }
+
+        public Builder pin(String pin) {
+            this.pin = pin;
+            return this;
+        }
+
+        public Builder balance(BigDecimal balance) {
+            this.balance = balance;
+            return this;
+        }
+
+        public Builder creditLimit(BigDecimal creditLimit) {
+            this.creditLimit = creditLimit;
+            return this;
+        }
+
+        public Builder currencyCode(String currencyCode) {
+            this.currencyCode = currencyCode;
+            return this;
+        }
+
+        public Builder status(CreditCardStatus status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder type(CreditCardType type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder bankName(String bankName) {
+            this.bankName = bankName;
+            return this;
+        }
+
+        public Builder issueDate(LocalDate issueDate) {
+            this.issueDate = issueDate;
+            return this;
+        }
+
+        public Builder rewardPoints(Long rewardPoints) {
+            this.rewardPoints = rewardPoints;
+            return this;
+        }
+
+        public Builder interestRate(BigDecimal interestRate) {
+            this.interestRate = interestRate;
+            return this;
+        }
+
+        public Builder contactless(Boolean contactless) {
+            this.contactless = contactless;
+            return this;
+        }
+
+        public Builder isBlocked(Boolean isBlocked) {
+            this.isBlocked = isBlocked;
+            return this;
+        }
+
+        public Builder createdAt(LocalDateTime createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        public Builder updatedAt(LocalDateTime updatedAt) {
+            this.updatedAt = updatedAt;
+            return this;
+        }
+
+        public CreditCard build() {
+            return new CreditCard(this);
+        }
+    }
+
     // --- Getters and Setters ---
 
     public Long getId() { return id; }
