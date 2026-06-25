@@ -46,9 +46,9 @@ public class CurrencyServiceTest {
         // --- 3. ASSERT ---
         StepVerifier.create(resultMono)
             .expectNextMatches(currency ->
-                    "USD".equals(currency.getCc()) &&
-                            Integer.valueOf(840).equals(currency.getR030()) &&
-                            Float.valueOf(41.20f).equals(currency.getRate())
+                "USD".equals(currency.getCc()) &&
+                    Integer.valueOf(840).equals(currency.getR030()) &&
+                    Float.valueOf(41.20f).equals(currency.getRate())
             )
             .verifyComplete();
 
