@@ -42,7 +42,13 @@
     </developers>
 
     <dependencies>
-        <!-- Reactive Web -->
+        <!-- 1. Сам шлюз (Spring Cloud Gateway) -->
+        <!--dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway</artifactId>
+        </dependency-->
+
+        <!-- 2. Реактивный движок WebFlux (обязателен для работы шлюза) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
@@ -198,7 +204,7 @@
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>2022.0.5</version>
+                <version>2024.0.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
