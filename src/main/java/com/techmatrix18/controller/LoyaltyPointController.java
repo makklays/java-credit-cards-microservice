@@ -20,11 +20,11 @@ import java.time.LocalDateTime;
  * @version 0.0.1
  * @since 04.06.2026
  */
+
 @RestController
 @RequestMapping(path = "/api/v1/loyalty", produces = "application/json")
 @CrossOrigin(origins = "*")
 public class LoyaltyPointController {
-
     private final LoyaltyPointCommandService loyaltyCommandService;
     private final LoyaltyPointQueryService loyaltyQueryService;
 
@@ -62,8 +62,8 @@ public class LoyaltyPointController {
             @RequestParam("credit-card") Long creditCardId,
             @RequestParam("points") Long points,
             @RequestParam(value = "expiration-date", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime expirationDate) {
-
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime expirationDate
+    ) {
         if (points == null || points <= 0) {
             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Points to earn must be positive"));
         }
@@ -78,8 +78,8 @@ public class LoyaltyPointController {
     public Mono<LoyaltyPoint> spendPoints(
             @RequestHeader("X-Idempotency-Key") String idempotencyKey,
             @RequestParam("credit-card") Long creditCardId,
-            @RequestParam("points") Long points) {
-
+            @RequestParam("points") Long points
+    ) {
         if (points == null || points <= 0) {
             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Points to spend must be positive"));
         }
