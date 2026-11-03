@@ -1,6 +1,6 @@
 # Service Specification: API Credit Cards Service
 **Автор:** Александр Кузив  
-**Проект:** Secure Credit Hub
+**Проект:** <a href="https://github.com/makklays/secure-credit-hub">Secure Credit Hub</a>
 
 ## 1. Business Capability & Domain (Бизнес-контекст)
 * **Domain (DDD Context):** Относится к ограниченному контексту (Bounded Context) `API Credit Cards Service`.
